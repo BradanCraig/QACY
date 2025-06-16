@@ -1,0 +1,94 @@
+body {
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f3f4f6;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 0;
+}
+
+header h2 {
+    font-size: 1.4rem;
+    color: #7f8c8d;
+    margin-top: 5px;
+}
+
+.intro p {
+    line-height: 1.6;
+    margin: 10px 0;
+}
+
+.intro a {
+    color: #2980b9;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.intro a:hover {
+    text-decoration: underline;
+}
+
+.upload {
+    margin-top: 30px;
+}
+
+label {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+input[type="file"] {
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #27ae60;
+    border: none;
+    color: white;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #1e8449;
+}
+
+.spinner {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #e91e63;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+    display: block;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Initially hide the spinner */
+.hidden {
+    display: none;
+}
