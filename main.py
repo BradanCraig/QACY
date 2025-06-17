@@ -1,10 +1,11 @@
-from flask import render_template, Flask, request, send_file
+from flask import render_template, Flask, request, send_file, jsonify
 from inference import *
 from PIL import Image
 import zipfile
 import io
 from tqdm import tqdm
-
+from stats import *
+import base64
 
 app = Flask(__name__)
 
@@ -28,20 +29,31 @@ def infer_images():
         content_bytes = io.BytesIO(imgs.read())
         content = zipfile.ZipFile(content_bytes, 'r')
         
+        low, mid, high = 0, 0, 0
         for img_name in tqdm(content.namelist()):
             mask = infer(Image.open(io.BytesIO(content.read(img_name))))
-
+            results = get_percents(mask)
+            
+            low += results["low"]
+            mid += results["mid"]
+            high += results["high"]
+            
             mask_b = io.BytesIO()
             mask.save(mask_b, format="PNG")
             mask_b.seek(0)
         
             zipf.writestr(img_name, mask_b.read())
 
-
+        results = {
+            "low": low/len(content.namelist()),
+            "mid": mid/len(content.namelist()),
+            "high": high/len(content.namelist())
+            }
 
     else:
         mask=infer(img=Image.open(imgs))
-
+        results = get_percents(mask)
+        
         mask_b = io.BytesIO()
         mask.save(mask_b, format="PNG")
         mask_b.seek(0)
@@ -50,8 +62,16 @@ def infer_images():
     
     zipf.close()
     zip_mem.seek(0)
-    return send_file(zip_mem, download_name=f"{name}.zip", as_attachment=True)
-
+    
+    zip_data = zip_mem.read()
+    zip_64 = base64.b64encode(zip_data).decode('utf-8')
+    response = {
+        "percents": results,
+        "zip_file": zip_64,
+        "name": f"{name}.zip"
+    }
+    
+    return jsonify(response)
 
 
 
