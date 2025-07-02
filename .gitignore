@@ -1,2 +1,8 @@
 venv/
+__pycache__/
 *.pyc
+*.zip
+*.log
+pyvenv.cfg
+static/MaskModel_100_Epochs_Fixed_Data_V2
+*.PNG

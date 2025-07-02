@@ -1,5 +1,3 @@
-# Rainbows-Automated
-
 ## Welcome to QACY
 In order to use this system, please follow the steps bellow
 

@@ -53,6 +53,7 @@
         results.hidden = true;
         progressBar.value = 0;
         progressContainer.classList.remove("hidden");
+        let downloadResults = false
 
         if (!file) {
             results.innerHTML = "<p>Please insert a photo</p>";
@@ -83,10 +84,14 @@
 
     if (data.status === "done") {
         source.close();
-        // Job is done, nothing else to do here
     }
-    else if (data.status === "results") {
-        // Process your results here
+    else if (data.status === "inference-done"){
+        console.log(data.percent)
+        progressBar.value = data.percent
+    }
+    else if (data.status === "results" && !downloadResults) {
+       downloadResults = true
+       source.close()
 
         const byteCharacters = atob(data.zip_file);
         const byteNumbers = Array.from(byteCharacters).map(c => c.charCodeAt(0));

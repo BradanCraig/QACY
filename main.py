@@ -53,7 +53,7 @@ def infer_images():
             for i, img_name in (enumerate(content.namelist())):
                 logger.info(i)
                 mask = infer(Image.open(io.BytesIO(content.read(img_name))))  # noqa: F405
-                progress_dict[job] = f"{(i + 0.5)/total*100:.2f}"
+                progress_dict[job] = {"status": "inference-done", "percent" : f"{(i + 0.5)/total*100:.2f}"}
                 logger.info("1")
                 results = get_percents(mask)  # noqa: F405
                 logger.info("2")
@@ -67,7 +67,7 @@ def infer_images():
             
                 zipf.writestr(img_name, mask_b.read())
                 
-                progress_dict[job] = f"{(i + 1)/total*100:.2f}"
+                progress_dict[job] = {"status": "inference-done", "percent" : f"{(i + 1)/total*100:.2f}"}
                 logger.info("3")
             results = {
                 "low": low/len(content.namelist()),
@@ -79,7 +79,7 @@ def infer_images():
             logger.info(file_buffer)
             mask=infer(img=Image.open(file_buffer))  # noqa: F405
             logger.info("1")
-            progress_dict[job] ={"status": "inference-done"}
+            progress_dict[job] ={"status": "inference-done", "percent": "50"}
             
             results = get_percents(mask)  # noqa: F405
             logger.info("2")
