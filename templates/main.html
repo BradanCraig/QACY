@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>QACY</title>
+    <link rel="stylesheet" href="static/main.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Welcome To QACY!</h1>
+            <h2>Where All of Your Mycelium Needs Are Met</h2>
+        </header>
+        <section class="intro">
+            <p>This Machine Learning algorithm was created to help classify mycelium growth into 3 classes</p>
+            <ul>
+                <li style="color: Red">No Growth</li>
+                <li style="color: Blue">Medium Growth</li>
+                <li style="color: Green">High Growth</li>
+            </ul>
+            <p>Simply inserting an image of your growth will return a masked images</p>
+            <p>If you would like to insert multiple images, zip them into a single folder and it will return a zipfile with the images inside</p>
+        </section>
+
+        <section class="upload">
+            <label for="file">Upload zip file:</label>
+            <input type="file" id="file">
+            <input type="text", id="name", placeholder="Name Your Zip File Here", size="22">
+            <button onclick="SubmitImages()">Submit</button>
+        </section>
+        
+        <div id="progress-container" class="hidden">
+            <label for="progress-bar">Processing:</label>
+            <progress id="progress-bar" value="0" max="100"></progress>
+        </div>
+
+
+        <div id="results" hidden></div>
+    
+    </div>
+
+<script>
+    async function SubmitImages() {
+        const name = document.getElementById("name").value;
+        const fileInput = document.getElementById("file");
+        const file = fileInput.files[0];
+
+        const progressContainer = document.getElementById("progress-container");
+        const progressBar = document.getElementById("progress-bar");
+        const results = document.getElementById("results");
+
+        results.innerHTML = '';
+        results.hidden = true;
+        progressBar.value = 0;
+        progressContainer.classList.remove("hidden");
+        let downloadResults = false
+
+        if (!file) {
+            results.innerHTML = "<p>Please insert a photo</p>";
+            results.hidden = false;
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("images", file);
+        formData.append("name", name);
+        console.log("sending")
+        console.log(file)
+        const response = await fetch("/infer", {
+            method: "POST",
+            body: formData
+        });
+        console.log("RESPONSE STATUS:", response.status);
+
+        const data = await response.json();
+        console.log("RESPONSE TEXT:", data);
+        
+        const job_id = data.job_id;
+
+        const source = new EventSource(`/progress/${job_id}`);
+
+        source.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+
+    if (data.status === "done") {
+        source.close();
+    }
+    else if (data.status === "inference-done"){
+        console.log(data.percent)
+        progressBar.value = data.percent
+    }
+    else if (data.status === "results" && !downloadResults) {
+       downloadResults = true
+       source.close()
+
+        const byteCharacters = atob(data.zip_file);
+        const byteNumbers = Array.from(byteCharacters).map(c => c.charCodeAt(0));
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/zip' });
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = data.name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        // Update progress bar & show percents
+        progressBar.value = 100;
+        results.innerHTML = `
+            <p>Average Percent Growth of Sample</p>
+            <ul>
+                <li>Low Growth: ${data.percents.low}</li>
+                <li>Medium Growth: ${data.percents.mid}</li>
+                <li>High Growth: ${data.percents.high}</li>
+            </ul>`;
+        results.hidden = false;
+    }
+    else if (!isNaN(data)) {
+        progressBar.value = parseFloat(data);
+    }
+};
+    }
+</script>
+</body>
+</html>
